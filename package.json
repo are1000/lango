@@ -1,0 +1,29 @@
+{
+  "name": "lango",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "deep-assign": "^2.0.0",
+    "immutable": "^3.8.1",
+    "lodash": "^4.17.2",
+    "pegjs": "^0.10.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/are1000/lango.git"
+  },
+  "author": "Are Wojciechowski <are_are_@live.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/are1000/lango/issues"
+  },
+  "homepage": "https://github.com/are1000/lango#readme"
+}
