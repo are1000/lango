@@ -1,0 +1,9 @@
+module File.
+
+Module < new Struct.
+
+Module:read <- { #file
+	return (require [fs, readFileSync])! [ file, "utf8" ].
+}.
+
+export Module.

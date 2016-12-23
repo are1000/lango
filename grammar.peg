@@ -1,0 +1,199 @@
+{
+	function LText(str) {
+		return {
+			type: 'STRING',
+			value: str,
+		}
+	}
+
+	function LNumber(o) {
+		return {
+			type: 'NUMBER',
+			value: o,
+		}
+	}
+
+	function LExp(l, r, o) {
+		return {
+			type: 'EXPRESSION',
+			left: l,
+			right: r,
+			operator: o,
+		}
+	}
+
+	function LAtom(o) {
+		return {
+			type: 'ATOM',
+			value: o,
+		}
+	}
+
+	function LStruct(o) {
+		return {
+			type: 'STRUCT',
+			value: o,
+		}
+	}
+
+	function LOp(o) {
+		return {
+			type: 'OPERATOR',
+			value: o,
+		}
+	}
+
+	function LBool(o) {
+		return {
+			type: 'BOOL',
+			value: o,
+		}
+	}
+
+	function LError(str) {
+		return {
+			type: 'ERROR',
+			value: str,
+		}
+	}
+
+	function LVoid() {
+		return { type: 'VOID' };
+	}
+
+	function LList(o) {
+		return {
+			type: 'LIST',
+			value: o,
+		}
+	}
+
+	function LAction(o) {
+		return {
+			type: 'ACTION',
+			value: o,
+		}
+	}
+
+	function leftAssoc(h, t) {
+		if (t.length > 0) {
+			var right = h;
+			var rest = t.pop();
+			var left = leftAssoc(rest[0], t);
+
+			var operator = rest[2];
+
+			return LExp(left, right, operator);
+		} else {
+			return h;
+		}
+	}
+
+	function rightAssoc(h, t) {
+		if (t.length > 0) {
+			var left = h;
+			var rest = t.shift();
+			var right = rightAssoc(rest[3], t);
+
+			var operator = rest[1];
+
+			return LExp(left, right, operator);
+		} else {
+			return h;
+		}
+	}
+
+	function rightAssocList(h, t) {
+		if (t.length > 0) {
+			var rest = t.shift();
+			return [h].concat(rightAssocList(rest[3], t));
+		} else {
+			return [h];
+		}
+	}
+
+	function log(o) {
+		console.log(JSON.stringify(o, 2, 2));
+	}
+
+	function clean(h, t) {
+		if (t.length > 0) {
+			var rest = t.shift();
+			return [h].concat(clean(rest[1], t));
+		} else {
+			return h;
+		}
+	}
+
+}
+
+start
+	= n? comment? n? e:expressions n? comment? n? { return e; }
+
+expressions
+	= head:expression "." comment? tail:(__ expression ".")* {
+		return clean(head, tail);
+	}
+
+expression
+	= E1
+
+E4
+	= "(" _ e:expression _ ")" { return e; }
+	/ value
+
+E1
+	= head:(E2 / value) tail:(_ rightop _ expression)+ { return rightAssoc(head, tail); }
+	/ E2
+
+E2
+	= tail:((a:accessor? { return a ? a : LAtom(''); }) _ accessop _)+ head:accessor { return leftAssoc(head, tail); }
+	/ E3
+
+E3
+	= op:unaryop _ right:expression { op.type = 'OPERATOR'; return LExp(LVoid(), right, op); }
+	/ E4
+
+value
+	= atom
+	/ string
+	/ number
+	/ action
+	/ "[" _ l:list? _ "]" { return l ? l : LList([]); }
+	/ "[" _ s:struct? _ "]" { return s ? s : LStruct({}); }
+	/ accessor
+
+
+accessor
+	= "*" a:atom { a.type = 'ACCESSOR'; return a; }
+	/ atom
+
+action
+	= "{" comment? _ e:expressions? _ "}" { return e ? LAction([].concat(e)) : LAction([]); }
+number
+	= "0" { return LNumber(0); }
+	/ head:[1-9] tail:[0-9]* { return LNumber(parseInt([head].concat(tail).join(''), 10)); }
+accessop
+	= ":" { return LOp(":"); }
+unaryop
+	= atom
+rightop
+	= head:("-" / "*" / "+" / "!" / "?" / "<-" / "<=" / "</" / "<>" / "<") { return LOp(head); }
+list
+	= head:expression tail:(_ "," _ expression)* { return LList(rightAssocList(head, tail)); }
+
+struct
+	= p:pair _ "," _ s:struct { s.value[p.key.value] = p.value; return s; }
+	/ p:pair { return LStruct({ [p.key.value]: p.value }); }
+
+pair
+	= k:atom _ "=" _ v:expression { return { key: k, value: v }; }
+
+comment
+	= _ "#" (!n .)* n  { return; }
+
+atom			= head:[a-zA-Z$@] tail:[a-zA-Z0-9/\-]* { return LAtom([head].concat(tail).join('')); }
+string			= "\"" str:[^"]* "\"" { return LText(str.join('')); }
+_ 				= [ \t\r\n]*
+__ "whitespace"	= [ \t\r\n]+
+n "newline"		= [\r\n]+

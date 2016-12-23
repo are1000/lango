@@ -1,0 +1,9 @@
+import Signal.
+
+Signal::create! [name=load].
+
+Signal:load </ {
+	print args.	
+}.
+
+Signal::emit! [name=load, args=dude].

@@ -1,0 +1,9 @@
+module Time.
+
+Module < new Struct.
+
+Module:signal:new <- {
+	
+}.
+
+export Module.

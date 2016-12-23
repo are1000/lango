@@ -1,0 +1,24 @@
+#
+# Name = Alarm
+# Author = are1000
+#
+# Required =
+#   (App    = Kix:app,
+#    time   = Time:signal,
+#    text   = String,
+#    action = Action)
+
+@Time.
+Modal @Kix:Modal.
+
+Alarm module {| args.
+    modal <- Modal:simple:new!
+        text    = args:text,
+        label   = "Sure.",
+        parent  = args:App.
+
+    args:time:on!
+        action = {
+            args:action! modal.
+        }.
+}

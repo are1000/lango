@@ -1,0 +1,15 @@
+module Signal.
+Signal < new Struct.
+
+Signal::emit <- {
+	fns < $:Signal:*name.
+	fns <> @{
+		$value! [args=*args].
+	}.
+}.
+
+Signal::create <- {
+	$:Signal:*name <- [].
+}.
+
+export Signal.
